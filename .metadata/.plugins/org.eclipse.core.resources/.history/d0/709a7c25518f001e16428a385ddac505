@@ -1,0 +1,44 @@
+package com.example.example.controllers;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.example.example.DTOS.UserInfoDTO;
+import com.example.example.model.UserInfo;
+import com.example.example.services.JwtService;
+import com.example.example.services.UserInfoService;
+
+public class UserInfoController {
+	@Autowired
+    private JwtService jwtService;
+    
+    @Autowired
+    private UserInfoService userInfoService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    
+    @PostMapping("/new")
+    public String addNewUser(@RequestBody UserInfo userInfo) {
+        return userInfoService.addUser(userInfo);
+    }
+    
+    @PostMapping("/authenticate")
+    public String authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
+    	Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+        if (authentication.isAuthenticated()) {
+            return jwtService.generateToken(authRequest.getUsername());
+        } else {
+            throw new UsernameNotFoundException("invalid user request !");
+        }
+
+
+    }
+
+
+}

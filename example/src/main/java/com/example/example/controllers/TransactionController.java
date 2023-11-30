@@ -1,0 +1,53 @@
+package com.example.example.controllers;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.example.model.Transaction;
+import com.example.example.services.TransactionService;
+
+@RestController
+@RequestMapping("/api/transactions")
+public class TransactionController {
+	@Autowired
+	private TransactionService transactionService;
+	
+	@GetMapping
+//	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+	public ResponseEntity<List<Transaction>> getAllTransactions(){
+		List<Transaction> transactions=transactionService.getAllTransactions();
+		return new ResponseEntity<>(transactions,HttpStatus.OK);
+	}
+	
+	@GetMapping("/{id}")
+	@PreAuthorize("hasAuthority('ROLE_USER')")
+	public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id){
+		Transaction transaction= transactionService.getTransactionById(id);
+		return transaction!= null
+				? new ResponseEntity<>(transaction,HttpStatus.OK)
+				: new ResponseEntity<>(HttpStatus.NOT_FOUND);		
+		
+	}
+	
+	@PostMapping
+	
+	public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction){
+		if(transaction == null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		Transaction createdTransaction=transactionService.createTransaction(transaction);
+		return new ResponseEntity<>(createdTransaction,HttpStatus.CREATED);
+	}
+	
+	
+}
